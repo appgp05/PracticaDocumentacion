@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Calculadora JS - Paridad con PHP</title>
+  <style>
+    .destacado { color: darkred; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <header><h1>Calculadora Real / Racional (JS)</h1></header>
+
+  <main>
+    <aside>
+      <fieldset id="ayuda">
+        <legend>Reglas de uso de la calculadora</legend>
+        <ul>
+          <li>La operación se escribe sin espacios.</li>
+          <li>Real: 5.1+4  — Racional: 6/3:2/1</li>
+        </ul>
+      </fieldset>
+    </aside>
+
+    <section>
+      <fieldset>
+        <legend>Establece la operación</legend>
+        <form id="calc-form" action="#" method="post">
+          <label for="operacion">Operación</label>
+          <input id="operacion" name="operacion" type="text" />
+          <input type="submit" value="Calcular" />
+        </form>
+      </fieldset>
+
+      <fieldset id="rtdo"><legend>Resultado</legend>
+        <div id="resultado"></div>
+      </fieldset>
+    </section>
+  </main>
+
+  <script type="module" src="./main.js"></script>
+</body>
+</html>

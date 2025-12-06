@@ -1,0 +1,7 @@
+{
+  "name": "projectos/calculadora",
+  "description": "Calculadora Real/Racional",
+  "require-dev": {
+    "phpdocumentor/phpdocumentor": "^3.9"
+  }
+}

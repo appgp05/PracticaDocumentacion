@@ -1,0 +1,210 @@
+/**
+ * @module operacion
+ * @description
+ * Contiene las clases Operacion, OperacionReal y OperacionRacional.
+ * La estructura y lógica buscan ser paralelas a los ficheros PHP originales.
+ */
+
+import { Racional } from './racional.js';
+
+/**
+ * Clase base que modela una operación textual con dos operandos.
+ */
+export class Operacion {
+  /**
+   * Constantes tipo
+   */
+  static get REAL() { return 1; }
+  static get RACIONAL() { return 2; }
+  static get ERROR() { return 3; }
+
+  /**
+   * Constructor: recibe el texto de la operación (sin espacios).
+   * @param {string} textoOperacion
+   */
+  constructor(textoOperacion) {
+    // Determina el tipo
+    var tipo = Operacion.resolverTipo(textoOperacion);
+
+    // Debug tipo (paralelo a var_dump en PHP)
+    console.log('Tipo detectado:', tipo);
+
+    var operadorYOperandos;
+    switch (tipo) {
+      case Operacion.REAL:
+        operadorYOperandos = this.resolverOperadorYOperandos(textoOperacion, /[+\-*\/]/);
+        break;
+      case Operacion.RACIONAL:
+        operadorYOperandos = this.resolverOperadorYOperandos(textoOperacion, /[+\-*:]/);
+        break;
+      case Operacion.ERROR:
+      default:
+        operadorYOperandos = ['', '', ''];
+        break;
+    }
+
+    this.tipo = tipo;
+    this.operador = operadorYOperandos[0];
+    this.operando1 = operadorYOperandos[1];
+    this.operando2 = operadorYOperandos[2];
+  }
+
+  /**
+   * Determina si la operación es real, racional o error usando regex.
+   * @param {string} textoOperacion
+   * @returns {number} Operacion.REAL | Operacion.RACIONAL | Operacion.ERROR
+   */
+  static resolverTipo(textoOperacion) {
+    var patronNumeroReal = '\\-?[0-9]([0-9]+)?(\\.[0-9]+)?';
+    var patronOperadorReal = '[+\\-*\\/]';
+    var patronReal = new RegExp('^' + patronNumeroReal + patronOperadorReal + patronNumeroReal + '$');
+
+    var patronNumeroRacional = '\\-?[1-9]([0-9]+)?(\\/[1-9]([0-9]+)?)?';
+    var patronOperadorRacional = '[+\\-*:]';
+    var patronRacional = new RegExp('^' + patronNumeroRacional + patronOperadorRacional + patronNumeroRacional + '$');
+
+    if (patronReal.test(textoOperacion)) {
+      return Operacion.REAL;
+    }
+    if (patronRacional.test(textoOperacion)) {
+      return Operacion.RACIONAL;
+    }
+    return Operacion.ERROR;
+  }
+
+  /**
+   * Extrae operador y operandos dado un patrón de operadores.
+   * Devuelve array [operador, operando1, operando2]
+   *
+   * @param {string} textoOperacion
+   * @param {RegExp} patronOperadores
+   * @returns {Array<string>}
+   */
+  resolverOperadorYOperandos(textoOperacion, patronOperadores) {
+    var m = textoOperacion.match(patronOperadores);
+    var operador = (m && m[0]) ? m[0] : '';
+    var operandos = textoOperacion.split(patronOperadores);
+
+    return [operador, operandos[0] || '', operandos[1] || ''];
+  }
+
+  /**
+   * Calcula el resultado delegando según el tipo.
+   * Para REAL: retorna number
+   * Para RACIONAL: retorna instancia Racional
+   * Para ERROR: retorna string con mensaje
+   *
+   * @returns {number|Racional|string}
+   */
+  calcular() {
+    switch (this.tipo) {
+      case Operacion.REAL:
+        var or = new OperacionReal(this);
+        return or.calcular();
+      case Operacion.RACIONAL:
+        var opr = new OperacionRacional(this);
+        return opr.calcular();
+      case Operacion.ERROR:
+      default:
+        return "<p class='destacado'>Operacion inválida</p>";
+    }
+  }
+}
+
+/**
+ * Clase que ejecuta operaciones entre reales.
+ */
+export class OperacionReal extends Operacion {
+  /**
+   * @param {Operacion} operacion Objeto que contiene operando1, operador, operando2
+   */
+  constructor(operacion) {
+    // Reconstituye la expresión como en PHP
+    super(operacion.operando1 + operacion.operador + operacion.operando2);
+  }
+
+  /**
+   * Realiza la operación sobre operandos reales (uso de parseFloat para convertir).
+   * @returns {number}
+   */
+  calcular() {
+    var resultado = null;
+
+    // Debug similar a var_dump en PHP
+    console.log('OperacionReal: operador, op1, op2', this.operador, this.operando1, this.operando2);
+
+    var a = parseFloat(this.operando1);
+    var b = parseFloat(this.operando2);
+
+    switch (this.operador) {
+      case '+':
+        resultado = a + b;
+        break;
+      case '-':
+        resultado = a - b;
+        break;
+      case '*':
+        resultado = a * b;
+        break;
+      case '/':
+        resultado = b === 0 ? NaN : a / b;
+        break;
+      default:
+        break;
+    }
+
+    return resultado;
+  }
+}
+
+/**
+ * Clase que ejecuta operaciones entre racionales.
+ */
+export class OperacionRacional extends Operacion {
+  /**
+   * @param {Operacion} operacion Objeto que contiene operando1, operador, operando2
+   */
+  constructor(operacion) {
+    super(operacion.operando1 + operacion.operador + operacion.operando2);
+  }
+
+  /**
+   * Calcula la operación racional y devuelve instancia Racional.
+   * @returns {Racional}
+   */
+  calcular() {
+    var r1 = new Racional(this.operando1);
+    var r2 = new Racional(this.operando2);
+
+    var resultado;
+    switch (this.operador) {
+      case '+':
+        // sumamos de forma manual (se delega luego a simplificar)
+        var numerador = r1.getNumerador() * r2.getDenominador() + r1.getDenominador() * r2.getNumerador();
+        var denominador = r1.getDenominador() * r2.getDenominador();
+        console.log('sumar racionales:', r1, r2);
+        resultado = Racional.simplificar(new Racional(numerador, denominador));
+        break;
+      case '-':
+        var numeradorS = r1.getNumerador() * r2.getDenominador() - r1.getDenominador() * r2.getNumerador();
+        var denominadorS = r1.getDenominador() * r2.getDenominador();
+        resultado = Racional.simplificar(new Racional(numeradorS, denominadorS));
+        break;
+      case '*':
+        var numeradorM = r1.getNumerador() * r2.getNumerador();
+        var denominadorM = r1.getDenominador() * r2.getDenominador();
+        resultado = Racional.simplificar(new Racional(numeradorM, denominadorM));
+        break;
+      case ':':
+        var numeradorD = r1.getNumerador() * r2.getDenominador();
+        var denominadorD = r1.getDenominador() * r2.getNumerador();
+        resultado = Racional.simplificar(new Racional(numeradorD, denominadorD));
+        break;
+      default:
+        resultado = new Racional();
+        break;
+    }
+
+    return resultado;
+  }
+}
