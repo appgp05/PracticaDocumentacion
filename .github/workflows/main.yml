@@ -7,6 +7,9 @@ jobs:
   build-docs:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout del código
         uses: actions/checkout@v4
@@ -28,7 +31,7 @@ jobs:
           # -r procesa la carpeta recursivamente
           # -d especifica la carpeta de salida
           jsdoc -r src -d out
-          
+
       - name: Commit y Push de la carpeta out
         run: |
           git config --global user.name "github-actions[bot]"
