@@ -1,0 +1,30 @@
+name: Generar JSDocumentor
+on:
+  push:
+    branches:
+      - main  # Se activa al subir cambios a la rama principal
+jobs:
+  build-docs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Generar documentación
+        run: |
+          # 1. Entramos en la carpeta del componente
+          cd JSDocumentor
+          
+          # 2. Instalamos JSDoc (si no lo tienes en package.json)
+          npm install -g jsdoc
+          
+          # 3. Ejecutamos jsdoc sobre la carpeta 'src' y guardamos en 'out'
+          # -r procesa la carpeta recursivamente
+          # -d especifica la carpeta de salida
+          jsdoc -r src -d out
